@@ -56,7 +56,7 @@ def prepare_dataset(dataset_path):
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
-def print_prediction_report(y_pred, y_true, names, metric):
+def print_prediction_report(clf, X_test, y_true, names, metric):
     '''
     Return a bunch of statistics and metrics reporting the performance of a 
      certain classifier model on the given training data. 
@@ -72,9 +72,10 @@ def print_prediction_report(y_pred, y_true, names, metric):
     '''
     
     labels = (1,0)
+    y_pred = clf.predict(X_test)
     
     print('\n\n- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ')
-    print('LAST ITERATION INFO FOR {}'.format(metric))
+    print('BEST ITERATION INFO FOR {}'.format(metric))
         
     # Confusion matrix.
     print('\nConfusion Matrix:') 
@@ -125,10 +126,11 @@ def select_best_features(X, y, k, names):
     X_best = best_features.transform(X)
 
     # Print out the features used
+    scores_copy = scores.copy()
     top_features = []
     for i in range(k):
-        idx = np.argmax(scores)
-        scores[idx] = 0
+        idx = np.argmax(scores_copy)
+        scores_copy[idx] = 0
         top_features.append(names[idx])
 
     print('\nTop {} features to use for classification: '.format(k))
@@ -144,9 +146,6 @@ def select_best_features(X, y, k, names):
         if names[i] == "GFielding": names[i]="GFie"
         
     ind = range(len(names))
-    print(ind)
-    print(len(names))
-    print(len(scores))
     plt.rc('font', size=30)
     plt.bar(ind, scores, width=1)
     plt.ylabel("Scores")
@@ -176,11 +175,11 @@ if __name__ == "__main__":
     path_to_data = 'output_files/extracted_features.csv'
     test_set_ratio = 0.2
     iterations=5
-    numFeatures = 5
+    numFeatures = 10
     
     # Pre-process the dataset.
     data_full, labels, feature_names = prepare_dataset(path_to_data)
-    print('The dataset is {}% nominated'.format(int((sum(labels)/len(labels))*100)))
+    print('The dataset is {}% nominated'.format((sum(labels)/len(labels))*100))
 
     data = select_best_features(data_full, labels, numFeatures, feature_names)
     
@@ -204,7 +203,7 @@ if __name__ == "__main__":
             if acc > bestAcc:
                 bestAcc = acc
                 bestClf = clf
-            metric_accuracy.append([i, acc])
+            metric_accuracy.append([i+1, acc])
             predictions.append(pred_labels)
             classifications.append(test_labels)
 
@@ -216,6 +215,6 @@ if __name__ == "__main__":
         
         plot_decision_tree(bestClf, feature_names, class_labels)
         output_csv(metric_accuracy, metric_predictions)
-        print_prediction_report(pred_labels, test_labels, class_labels, imp)
-        print("Tree has {} nodes".format(bestClf.tree_.node_count))
+        print_prediction_report(bestClf, test_data, test_labels, class_labels, imp)
+        print("\nDecision Tree has {} nodes".format(bestClf.tree_.node_count))
   
