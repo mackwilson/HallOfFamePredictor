@@ -140,7 +140,7 @@ if __name__ == "__main__":
     path_to_data = 'output_files/extracted_features.csv'
     test_set_ratio = 0.2
     iterations=5
-    numFeatures = 10
+    numFeatures = 5
     
     # Pre-process the dataset.
     data_full, labels, feature_names = prepare_dataset(path_to_data)
