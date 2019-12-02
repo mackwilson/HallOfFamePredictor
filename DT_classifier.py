@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 from sklearn import tree, model_selection, metrics, feature_selection
 import csv
 
-
 def prepare_dataset(dataset_path):
     '''  
     Read a comma separated text file where 
@@ -106,11 +105,11 @@ def classify(impurity, X_train, y_train, X_test):
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 def output_csv(accuracy, predictions):
-    np.savetxt('g69_DT_{}_accuracy.csv'.format(imp), np.asarray(accuracy), 
+    np.savetxt('output_files/g69_DT_{}_accuracy.csv'.format(imp), np.asarray(accuracy), 
         fmt='%i', delimiter=',', header="Dataset number, Accuracy", comments='')
 
-    np.savetxt('g69_DT_{}_predictions.csv'.format(imp), np.asarray(predictions), 
-        fmt='%i', delimiter=',', header="Iteration, Classifictaion, Prediction", comments='')
+    np.savetxt('output_files/g69_DT_{}_predictions.csv'.format(imp), np.asarray(predictions), 
+        fmt='%i', delimiter=',', header="Iteration, Classification, Prediction", comments='')
 
 
 
@@ -138,7 +137,7 @@ def select_best_features(X, y, k, names):
 if __name__ == "__main__":
     # Change these as required. 
     class_labels = ("Elected", "Nominated") #corresponding to (1,0) binary vals
-    path_to_data = 'input.csv'
+    path_to_data = 'output_files/extracted_features.csv'
     test_set_ratio = 0.2
     iterations=5
     numFeatures = 10
@@ -176,8 +175,4 @@ if __name__ == "__main__":
 
         output_csv(metric_accuracy, metric_predictions)
         print_prediction_report(pred_labels, test_labels, class_labels, imp)
-
-            
-
-    # TODO: selelctKBest features 
   
