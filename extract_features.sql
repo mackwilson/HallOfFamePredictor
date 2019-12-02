@@ -135,13 +135,13 @@ CREATE TABLE final_set AS SELECT
       ON ff.playerID=h.playerID;
 DESCRIBE final_set;
 
--- Output features to CSV -- Headers not included
--- SELECT "playerID","yearsActiveBatting","GBatting","AB","R","H","2B","3B","HR","RBI","SO",
--- "yearsActiveFielding","GFielding","PO","A","E","DP","PB","SB","CS","yearsActivePitching",
--- "W","L","GPitching","SHO","SV","IPOuts","HA","ER","HRA","BB","SOF","BFP","debut","inducted"
--- UNION ALL
--- SELECT * FROM final_set
--- INTO OUTFILE 'C:/ProgramData/MySQL/MySQL Server 8.0/Uploads/hof_no_mang_out.csv' # This path based on 'secure_file_priv' SQL variable
--- FIELDS TERMINATED BY ','
--- ENCLOSED BY '"'
--- LINES TERMINATED BY '\n';
+Output features to CSV 
+SELECT "playerID","yearsActiveBatting","GBatting","AB","R","H","2B","3B","HR","RBI","SO",
+"yearsActiveFielding","GFielding","PO","A","E","DP","PB","SB","CS","yearsActivePitching",
+"W","L","GPitching","SHO","SV","IPOuts","HA","ER","HRA","BB","SOF","BFP","debut","inducted"
+UNION ALL
+SELECT * FROM final_set
+INTO OUTFILE '/home/mackenzieskyewilson/src/halloffamepredictor/output_files/extracted_features.csv' # This path based on 'secure_file_priv' SQL variable
+FIELDS TERMINATED BY ','
+ENCLOSED BY '"'
+LINES TERMINATED BY '\n';
