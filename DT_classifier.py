@@ -1,7 +1,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn import tree, model_selection, metrics, feature_selection
+from sklearn.tree import export_graphviz
 import csv
+from sklearn.externals.six import StringIO  
+from IPython.display import Image  
+import pydotplus
 
 def prepare_dataset(dataset_path):
     '''  
@@ -99,7 +103,7 @@ def print_prediction_report(y_pred, y_true, names, metric):
 def classify(impurity, X_train, y_train, X_test):
     clf = tree.DecisionTreeClassifier(criterion=impurity)
     clf = clf.fit(X_train,y_train)
-    return clf.predict(X_test)
+    return clf.predict(X_test), clf
     
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -130,7 +134,39 @@ def select_best_features(X, y, k, names):
     print('\nTop {} features to use for classification: '.format(k))
     print(top_features)
 
+    for i in range(len(names)): 
+        if names[i] == "yearsActiveBatting":
+            names[i] = "yBat"
+        if names[i] == "yearsActiveFielding": names[i] = "yField"
+        if names[i] == "yearsActivePitching": names[i]="yPit"
+        if names[i] == "GBatting": names[i] = "GBat"
+        if names[i] == "GPitching": names[i]="GPit"
+        if names[i] == "GFielding": names[i]="GFie"
+        
+    ind = range(len(names))
+    print(ind)
+    print(len(names))
+    print(len(scores))
+    plt.rc('font', size=30)
+    plt.bar(ind, scores, width=1)
+    plt.ylabel("Scores")
+    plt.xlabel("Feature")
+    plt.title("Feature Selection using SelectKBest")
+    plt.xticks(ind, names, rotation=90)
+    plt.show()
+
     return X_best
+
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+def plot_decision_tree(clf, names, classes):
+    dot_data = StringIO()
+    export_graphviz(clf, out_file=dot_data,  
+                filled=True, rounded=True,
+                special_characters=True,feature_names = names,class_names=classes)
+    graph = pydotplus.graph_from_dot_data(dot_data.getvalue())  
+    graph.write_png('output_files/DT_{}.png'.format(imp))
+    Image(graph.create_png())
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -144,6 +180,7 @@ if __name__ == "__main__":
     
     # Pre-process the dataset.
     data_full, labels, feature_names = prepare_dataset(path_to_data)
+    print('The dataset is {}% nominated'.format(int((sum(labels)/len(labels))*100)))
 
     data = select_best_features(data_full, labels, numFeatures, feature_names)
     
@@ -156,13 +193,18 @@ if __name__ == "__main__":
         classifications = []
         testLen = int(0.2*len(labels)*iterations)+iterations
         metric_predictions = np.zeros((testLen, 3))
+        bestClf = []
+        bestAcc = 0
 
         for i in range(iterations):
             train_data,test_data,train_labels,test_labels = model_selection.train_test_split(
                     data, labels, test_size=test_set_ratio, random_state=2*i)  
-            pred_labels = classify(imp, train_data, train_labels, test_data)
-
-            metric_accuracy.append([i, metrics.accuracy_score(test_labels, pred_labels)*100])
+            pred_labels, clf = classify(imp, train_data, train_labels, test_data)
+            acc = metrics.accuracy_score(test_labels, pred_labels)*100
+            if acc > bestAcc:
+                bestAcc = acc
+                bestClf = clf
+            metric_accuracy.append([i, acc])
             predictions.append(pred_labels)
             classifications.append(test_labels)
 
@@ -172,7 +214,8 @@ if __name__ == "__main__":
             metric_predictions[start:end, 1] = test_labels
             metric_predictions[start:end, 2] = pred_labels
         
-
+        plot_decision_tree(bestClf, feature_names, class_labels)
         output_csv(metric_accuracy, metric_predictions)
         print_prediction_report(pred_labels, test_labels, class_labels, imp)
+        print("Tree has {} nodes".format(bestClf.tree_.node_count))
   
