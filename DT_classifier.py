@@ -7,6 +7,8 @@ from sklearn.externals.six import StringIO
 from IPython.display import Image  
 import pydotplus
 
+OUTPUT_ON = False
+
 def prepare_dataset(dataset_path):
     '''  
     Read a comma separated text file where 
@@ -76,6 +78,7 @@ def print_prediction_report(clf, X_test, y_true, names, metric):
     
     print('\n\n- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ')
     print('BEST ITERATION INFO FOR {}'.format(metric))
+    print('The predicted classification is {}% nominated'.format((sum(y_pred)/len(y_pred))*100))
         
     # Confusion matrix.
     print('\nConfusion Matrix:') 
@@ -110,11 +113,12 @@ def classify(impurity, X_train, y_train, X_test):
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 def output_csv(accuracy, predictions):
-    np.savetxt('output_files/g69_DT_{}_accuracy.csv'.format(imp), np.asarray(accuracy), 
-        fmt='%i', delimiter=',', header="Dataset number, Accuracy", comments='')
+    if OUTPUT_ON:
+        np.savetxt('output_files/g52_DT_{}_accuracy.csv'.format(imp), np.asarray(accuracy), 
+            fmt='%i', delimiter=',', header="Dataset number, Accuracy", comments='')
 
-    np.savetxt('output_files/g69_DT_{}_predictions.csv'.format(imp), np.asarray(predictions), 
-        fmt='%i', delimiter=',', header="Iteration, Classification, Prediction", comments='')
+        np.savetxt('output_files/g52_DT_{}_predictions.csv'.format(imp), np.asarray(predictions), 
+            fmt='%i', delimiter=',', header="Iteration, Classification, Prediction", comments='')
 
 
 
@@ -136,36 +140,38 @@ def select_best_features(X, y, k, names):
     print('\nTop {} features to use for classification: '.format(k))
     print(top_features)
 
-    for i in range(len(names)): 
-        if names[i] == "yearsActiveBatting":
-            names[i] = "yBat"
-        if names[i] == "yearsActiveFielding": names[i] = "yField"
-        if names[i] == "yearsActivePitching": names[i]="yPit"
-        if names[i] == "GBatting": names[i] = "GBat"
-        if names[i] == "GPitching": names[i]="GPit"
-        if names[i] == "GFielding": names[i]="GFie"
-        
-    ind = range(len(names))
-    plt.rc('font', size=30)
-    plt.bar(ind, scores, width=1)
-    plt.ylabel("Scores")
-    plt.xlabel("Feature")
-    plt.title("Feature Selection using SelectKBest")
-    plt.xticks(ind, names, rotation=90)
-    plt.show()
+    if OUTPUT_ON:
+        for i in range(len(names)): 
+            if names[i] == "yearsActiveBatting":
+                names[i] = "yBat"
+            if names[i] == "yearsActiveFielding": names[i] = "yField"
+            if names[i] == "yearsActivePitching": names[i]="yPit"
+            if names[i] == "GBatting": names[i] = "GBat"
+            if names[i] == "GPitching": names[i]="GPit"
+            if names[i] == "GFielding": names[i]="GFie"
+            
+        ind = range(len(names))
+        plt.rc('font', size=30)
+        plt.bar(ind, scores, width=1)
+        plt.ylabel("Scores")
+        plt.xlabel("Feature")
+        plt.title("Feature Selection using SelectKBest")
+        plt.xticks(ind, names, rotation=90)
+        plt.show()
 
     return X_best
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 def plot_decision_tree(clf, names, classes):
-    dot_data = StringIO()
-    export_graphviz(clf, out_file=dot_data,  
-                filled=True, rounded=True,
-                special_characters=True,feature_names = names,class_names=classes)
-    graph = pydotplus.graph_from_dot_data(dot_data.getvalue())  
-    graph.write_png('output_files/DT_{}.png'.format(imp))
-    Image(graph.create_png())
+    if OUTPUT_ON:
+        dot_data = StringIO()
+        export_graphviz(clf, out_file=dot_data,  
+                    filled=True, rounded=True,
+                    special_characters=True,feature_names = names,class_names=classes)
+        graph = pydotplus.graph_from_dot_data(dot_data.getvalue())  
+        graph.write_png('output_files/DT_{}.png'.format(imp))
+        Image(graph.create_png())
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
